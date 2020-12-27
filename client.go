@@ -19,7 +19,7 @@ func (b *Barnard) start() {
 
 	var err error
 	if strings.HasSuffix(b.Address, ".i2p") {
-    sam, err := goSam.NewClientFromOptions(
+		sam, err := goSam.NewClientFromOptions(
 			goSam.SetAddr(addr),
 			goSam.SetInQuantity(5),
 			goSam.SetOutQuantity(5),
