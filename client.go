@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 
 	"layeh.com/gumble/gumble"
 	"layeh.com/gumble/gumbleopenal"
 	"layeh.com/gumble/gumbleutil"
+
+	"github.com/eyedeekay/goSam"
 )
 
 func (b *Barnard) start() {
@@ -15,10 +18,38 @@ func (b *Barnard) start() {
 	b.Config.Attach(b)
 
 	var err error
-	_, err = gumble.DialWithDialer(new(net.Dialer), b.Address, b.Config, &b.TLSConfig)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
+	if strings.HasSuffix(b.Address, ".i2p") {
+    sam, err := goSam.NewClientFromOptions(
+			goSam.SetAddr(addr),
+			goSam.SetInQuantity(5),
+			goSam.SetOutQuantity(5),
+			goSam.SetInBackups(3),
+			goSam.SetOutBackups(3),
+			goSam.SetInLength(2),
+			goSam.SetOutLength(2),
+			goSam.SetInVariance(-1),
+			goSam.SetOutVariance(-1),
+			goSam.SetCloseIdle(false),
+			goSam.SetDebug(false),
+			goSam.SetLeaseSetEncType("4"),
+			goSam.SetSAMMinVersion(0),
+			goSam.SetSAMMaxVersion(1),
+		)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
+		_, err = gumble.DialWithDialer(sam.Dial, b.Address, b.Config, &b.TLSConfig)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
+	} else {
+		_, err = gumble.DialWithDialer(new(net.Dialer), b.Address, b.Config, &b.TLSConfig)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
 	}
 
 	// Audio
